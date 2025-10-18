@@ -1,16 +1,8 @@
-mod csv_parser;
-mod json_parser;
-
-pub use csv_parser::CsvParser;
-pub use json_parser::JsonParser;
+pub mod csv_parser;
+pub mod json_parser;
 
 use std::error::Error;
 use std::fmt;
-use std::io::BufRead;
-
-pub trait Parse<T> {
-    fn parse(reader: impl BufRead) -> Result<Vec<T>, ParseError>;
-}
 
 #[derive(Debug)]
 pub enum ParseError {

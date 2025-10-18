@@ -1,20 +1,25 @@
 mod parsers;
 mod records;
 
-use parsers::{Parse, ParseError};
-pub use records::{CsvRecord, JsonRecord};
+pub use records::{CsvRecord, CsvRecords, JsonRecord, JsonRecords};
+
+use parsers::ParseError;
+use records::Parse;
 
 use std::io::BufRead;
 
-pub fn parse<T: Parse<T>>(reader: impl BufRead) -> Result<Vec<T>, ParseError> {
+pub fn parse<T>(reader: impl BufRead) -> Result<T, ParseError>
+where
+    T: Parse<T>,
+{
     T::parse(reader)
 }
 
-pub fn convert_to<T1, T2>(records: Vec<T1>) -> Vec<T2>
+pub fn convert_to<T1, T2>(records: T1) -> T2
 where
     T1: Into<T2>,
 {
-    records.into_iter().map(|r| r.into()).collect()
+    records.into()
 }
 
 #[cfg(test)]
@@ -28,22 +33,22 @@ mod tests {
     fn parse_fn_successfuly_parses_valid_csv_input() {
         let input = Cursor::new("name,balance\nVova,100");
 
-        let records: Vec<CsvRecord> = parse(input).unwrap();
+        let records: CsvRecords = parse(input).unwrap();
 
         let expected = CsvRecord {
             name: "Vova".into(),
             balance: 100,
         };
 
-        assert_eq!(records.len(), 1);
-        assert_eq!(records.first().unwrap(), &expected);
+        assert_eq!(records.list().len(), 1);
+        assert_eq!(records.list().first().unwrap(), &expected);
     }
 
     #[test]
     fn parse_fn_fails_to_parse_invalid_csv_input() {
         let input = Cursor::new("full_name,balance\nVova,100");
 
-        let err = parse::<CsvRecord>(input).err().unwrap();
+        let err = parse::<CsvRecords>(input).err().unwrap();
 
         let expected = "CSV deserialize error: record 1 (line: 2, byte: 18): missing field `name`";
         assert_eq!(err.to_string(), expected);
@@ -61,7 +66,7 @@ mod tests {
 
         let input = Cursor::new(data.to_string());
 
-        let records: Vec<JsonRecord> = parse(input).unwrap();
+        let records: JsonRecords = parse(input).unwrap();
 
         let expected = JsonRecord {
             name: "Petr".into(),
@@ -69,8 +74,8 @@ mod tests {
             bank_name: Some("central bank".into()),
         };
 
-        assert_eq!(records.len(), 1);
-        assert_eq!(records.first().unwrap(), &expected);
+        assert_eq!(records.list().len(), 1);
+        assert_eq!(records.list().first().unwrap(), &expected);
     }
 
     #[test]
@@ -82,7 +87,7 @@ mod tests {
         });
         let input = Cursor::new(data.to_string());
 
-        let err = parse::<JsonRecord>(input).err().unwrap();
+        let err = parse::<JsonRecords>(input).err().unwrap();
 
         let expected = "invalid type: map, expected a sequence at line 1 column 1";
         assert_eq!(err.to_string(), expected);
@@ -100,40 +105,40 @@ mod tests {
 
         let input = Cursor::new(data.to_string());
 
-        let records: Vec<JsonRecord> = parse(input).unwrap();
-        let csv_records: Vec<CsvRecord> = convert_to(records);
+        let records: JsonRecords = parse(input).unwrap();
+        let csv_records: CsvRecords = convert_to(records);
 
         let expected = CsvRecord {
             name: "Petr".into(),
             balance: 300,
         };
 
-        assert_eq!(csv_records.len(), 1);
-        assert_eq!(csv_records.first().unwrap(), &expected);
+        assert_eq!(csv_records.list().len(), 1);
+        assert_eq!(csv_records.list().first().unwrap(), &expected);
     }
 
     #[test]
     fn convert_to_csv_fn_leave_csv_records_untouched() {
         let input = Cursor::new("name,balance\nVova,100");
 
-        let records: Vec<CsvRecord> = parse(input).unwrap();
-        let csv_records: Vec<CsvRecord> = convert_to(records);
+        let records: CsvRecords = parse(input).unwrap();
+        let csv_records: CsvRecords = convert_to(records);
 
         let expected = CsvRecord {
             name: "Vova".into(),
             balance: 100,
         };
 
-        assert_eq!(csv_records.len(), 1);
-        assert_eq!(csv_records.first().unwrap(), &expected);
+        assert_eq!(csv_records.list().len(), 1);
+        assert_eq!(csv_records.list().first().unwrap(), &expected);
     }
 
     #[test]
     fn convert_to_json_fn_converts_csv_to_json() {
         let input = Cursor::new("name,balance\nVova,100");
 
-        let records: Vec<CsvRecord> = parse(input).unwrap();
-        let json_records: Vec<JsonRecord> = convert_to(records);
+        let records: CsvRecords = parse(input).unwrap();
+        let json_records: JsonRecords = convert_to(records);
 
         let expected = JsonRecord {
             name: "Vova".into(),
@@ -141,8 +146,8 @@ mod tests {
             bank_name: None,
         };
 
-        assert_eq!(json_records.len(), 1);
-        assert_eq!(json_records.first().unwrap(), &expected);
+        assert_eq!(json_records.list().len(), 1);
+        assert_eq!(json_records.list().first().unwrap(), &expected);
     }
 
     #[test]
@@ -157,8 +162,8 @@ mod tests {
 
         let input = Cursor::new(data.to_string());
 
-        let records: Vec<JsonRecord> = parse(input).unwrap();
-        let json_records: Vec<JsonRecord> = convert_to(records);
+        let records: JsonRecords = parse(input).unwrap();
+        let json_records: JsonRecords = convert_to(records);
 
         let expected = JsonRecord {
             name: "Petr".into(),
@@ -166,7 +171,7 @@ mod tests {
             bank_name: Some("central bank".into()),
         };
 
-        assert_eq!(json_records.len(), 1);
-        assert_eq!(json_records.first().unwrap(), &expected);
+        assert_eq!(json_records.list().len(), 1);
+        assert_eq!(json_records.list().first().unwrap(), &expected);
     }
 }

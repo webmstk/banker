@@ -1,22 +1,17 @@
-use super::{Parse, ParseError};
-use crate::CsvRecord;
+use super::ParseError;
+use crate::{CsvRecord, CsvRecords};
 
 use std::io::BufRead;
 
-#[derive(Debug)]
-pub struct CsvParser {}
+pub fn parse(reader: impl BufRead) -> Result<CsvRecords, ParseError> {
+    let mut reader = csv::Reader::from_reader(reader);
 
-impl Parse<CsvRecord> for CsvParser {
-    fn parse(reader: impl BufRead) -> Result<Vec<CsvRecord>, ParseError> {
-        let mut reader = csv::Reader::from_reader(reader);
-
-        let mut records = Vec::new();
-        for record in reader.deserialize() {
-            records.push(record?);
-        }
-
-        Ok(records)
+    let mut records: Vec<CsvRecord> = Vec::new();
+    for record in reader.deserialize() {
+        records.push(record?);
     }
+
+    Ok(records.into())
 }
 
 impl From<csv::Error> for ParseError {
