@@ -7,9 +7,8 @@ use std::io::BufRead;
 pub struct JsonParser {}
 
 impl Parse<JsonRecord> for JsonParser {
-    fn parse(input: impl BufRead) -> Result<Vec<JsonRecord>, ParseError> {
-        let records: Vec<JsonRecord> = serde_json::from_reader(input)?;
-        Ok(records)
+    fn parse(reader: impl BufRead) -> Result<Vec<JsonRecord>, ParseError> {
+        Ok(serde_json::from_reader(reader)?)
     }
 }
 

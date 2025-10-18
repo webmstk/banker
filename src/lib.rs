@@ -6,8 +6,8 @@ pub use records::{CsvRecord, JsonRecord};
 
 use std::io::BufRead;
 
-pub fn parse<T: Parse<T>>(input: impl BufRead) -> Result<Vec<T>, ParseError> {
-    T::parse(input)
+pub fn parse<T: Parse<T>>(reader: impl BufRead) -> Result<Vec<T>, ParseError> {
+    T::parse(reader)
 }
 
 pub fn convert_to_csv<T>(records: Vec<T>) -> Vec<CsvRecord>

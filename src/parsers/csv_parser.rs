@@ -7,8 +7,8 @@ use std::io::BufRead;
 pub struct CsvParser {}
 
 impl Parse<CsvRecord> for CsvParser {
-    fn parse(input: impl BufRead) -> Result<Vec<CsvRecord>, ParseError> {
-        let mut reader = csv::Reader::from_reader(input);
+    fn parse(reader: impl BufRead) -> Result<Vec<CsvRecord>, ParseError> {
+        let mut reader = csv::Reader::from_reader(reader);
 
         let mut records = Vec::new();
         for record in reader.deserialize() {
