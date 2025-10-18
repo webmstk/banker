@@ -1,17 +1,13 @@
 mod parsers;
 mod records;
 
-use parsers::{CsvParser, JsonParser, Parse, ParseError};
+use parsers::{Parse, ParseError};
 pub use records::{CsvRecord, JsonRecord};
 
 use std::io::BufRead;
 
-pub fn read_csv(input: impl BufRead) -> Result<Vec<CsvRecord>, ParseError> {
-    CsvParser::parse(input)
-}
-
-pub fn read_json(input: impl BufRead) -> Result<Vec<JsonRecord>, ParseError> {
-    JsonParser::parse(input)
+pub fn parse<T: Parse<T>>(input: impl BufRead) -> Result<Vec<T>, ParseError> {
+    T::parse(input)
 }
 
 pub fn convert_to_csv<T>(records: Vec<T>) -> Vec<CsvRecord>
@@ -36,10 +32,10 @@ mod tests {
     use std::io::Cursor;
 
     #[test]
-    fn read_csv_fn_successfuly_parses_valid_input() {
+    fn parse_fn_successfuly_parses_valid_csv_input() {
         let input = Cursor::new("name,balance\nVova,100");
 
-        let records = read_csv(input).unwrap();
+        let records: Vec<CsvRecord> = parse(input).unwrap();
 
         let expected = CsvRecord {
             name: "Vova".into(),
@@ -51,17 +47,17 @@ mod tests {
     }
 
     #[test]
-    fn read_csv_fn_fails_to_parse_invalid_input() {
+    fn parse_fn_fails_to_parse_invalid_csv_input() {
         let input = Cursor::new("full_name,balance\nVova,100");
 
-        let err = read_csv(input).err().unwrap();
+        let err = parse::<CsvRecord>(input).err().unwrap();
 
         let expected = "CSV deserialize error: record 1 (line: 2, byte: 18): missing field `name`";
         assert_eq!(err.to_string(), expected);
     }
 
     #[test]
-    fn read_json_fn_successfuly_parses_valid_input() {
+    fn parse_fn_successfuly_parses_valid_json_input() {
         let data = json!([
             {
                 "name": "Petr",
@@ -72,7 +68,7 @@ mod tests {
 
         let input = Cursor::new(data.to_string());
 
-        let records = read_json(input).unwrap();
+        let records: Vec<JsonRecord> = parse(input).unwrap();
 
         let expected = JsonRecord {
             name: "Petr".into(),
@@ -85,7 +81,7 @@ mod tests {
     }
 
     #[test]
-    fn read_json_fn_fails_to_parse_invalid_input() {
+    fn parse_fn_fails_to_parse_invalid_json_input() {
         let data = json!({
             "name": "Petr",
             "balance": 300,
@@ -93,7 +89,7 @@ mod tests {
         });
         let input = Cursor::new(data.to_string());
 
-        let err = read_json(input).err().unwrap();
+        let err = parse::<JsonRecord>(input).err().unwrap();
 
         let expected = "invalid type: map, expected a sequence at line 1 column 1";
         assert_eq!(err.to_string(), expected);
@@ -111,7 +107,7 @@ mod tests {
 
         let input = Cursor::new(data.to_string());
 
-        let records = read_json(input).unwrap();
+        let records: Vec<JsonRecord> = parse(input).unwrap();
         let csv_records = convert_to_csv(records);
 
         let expected = CsvRecord {
@@ -127,7 +123,7 @@ mod tests {
     fn convert_to_csv_fn_leave_csv_records_untouched() {
         let input = Cursor::new("name,balance\nVova,100");
 
-        let records = read_csv(input).unwrap();
+        let records: Vec<CsvRecord> = parse(input).unwrap();
         let csv_records = convert_to_csv(records);
 
         let expected = CsvRecord {
@@ -143,7 +139,7 @@ mod tests {
     fn convert_to_json_fn_converts_csv_to_json() {
         let input = Cursor::new("name,balance\nVova,100");
 
-        let records = read_csv(input).unwrap();
+        let records: Vec<CsvRecord> = parse(input).unwrap();
         let json_records = convert_to_json(records);
 
         let expected = JsonRecord {
@@ -168,7 +164,7 @@ mod tests {
 
         let input = Cursor::new(data.to_string());
 
-        let records = read_json(input).unwrap();
+        let records: Vec<JsonRecord> = parse(input).unwrap();
         let json_records = convert_to_json(records);
 
         let expected = JsonRecord {
