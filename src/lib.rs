@@ -10,16 +10,9 @@ pub fn parse<T: Parse<T>>(reader: impl BufRead) -> Result<Vec<T>, ParseError> {
     T::parse(reader)
 }
 
-pub fn convert_to_csv<T>(records: Vec<T>) -> Vec<CsvRecord>
+pub fn convert_to<T1, T2>(records: Vec<T1>) -> Vec<T2>
 where
-    T: Into<CsvRecord>,
-{
-    records.into_iter().map(|r| r.into()).collect()
-}
-
-pub fn convert_to_json<T>(records: Vec<T>) -> Vec<JsonRecord>
-where
-    T: Into<JsonRecord>,
+    T1: Into<T2>,
 {
     records.into_iter().map(|r| r.into()).collect()
 }
@@ -108,7 +101,7 @@ mod tests {
         let input = Cursor::new(data.to_string());
 
         let records: Vec<JsonRecord> = parse(input).unwrap();
-        let csv_records = convert_to_csv(records);
+        let csv_records: Vec<CsvRecord> = convert_to(records);
 
         let expected = CsvRecord {
             name: "Petr".into(),
@@ -124,7 +117,7 @@ mod tests {
         let input = Cursor::new("name,balance\nVova,100");
 
         let records: Vec<CsvRecord> = parse(input).unwrap();
-        let csv_records = convert_to_csv(records);
+        let csv_records: Vec<CsvRecord> = convert_to(records);
 
         let expected = CsvRecord {
             name: "Vova".into(),
@@ -140,7 +133,7 @@ mod tests {
         let input = Cursor::new("name,balance\nVova,100");
 
         let records: Vec<CsvRecord> = parse(input).unwrap();
-        let json_records = convert_to_json(records);
+        let json_records: Vec<JsonRecord> = convert_to(records);
 
         let expected = JsonRecord {
             name: "Vova".into(),
@@ -165,7 +158,7 @@ mod tests {
         let input = Cursor::new(data.to_string());
 
         let records: Vec<JsonRecord> = parse(input).unwrap();
-        let json_records = convert_to_json(records);
+        let json_records: Vec<JsonRecord> = convert_to(records);
 
         let expected = JsonRecord {
             name: "Petr".into(),
