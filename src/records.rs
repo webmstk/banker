@@ -1,7 +1,7 @@
 mod csv_record;
 mod json_record;
 
-use std::io::{self, BufRead, Write};
+use std::io::{self, Read, Write};
 
 pub use csv_record::{CsvRecord, CsvRecords};
 pub use json_record::{JsonRecord, JsonRecords};
@@ -9,7 +9,7 @@ pub use json_record::{JsonRecord, JsonRecords};
 use crate::parsers::ParseError;
 
 pub trait Parse<T>: Sized {
-    fn parse(reader: impl BufRead) -> Result<Self, ParseError>;
+    fn parse(reader: impl Read) -> Result<Self, ParseError>;
 }
 
 pub trait Print {

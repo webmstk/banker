@@ -1,9 +1,9 @@
 use super::ParseError;
 use crate::{JsonRecord, JsonRecords};
 
-use std::io::BufRead;
+use std::io::Read;
 
-pub fn parse(reader: impl BufRead) -> Result<JsonRecords, ParseError> {
+pub fn parse(reader: impl Read) -> Result<JsonRecords, ParseError> {
     let records: Vec<JsonRecord> = serde_json::from_reader(reader)?;
     Ok(records.into())
 }

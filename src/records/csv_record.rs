@@ -5,7 +5,7 @@ use crate::{JsonRecord, JsonRecords};
 
 use serde::{Deserialize, Serialize};
 
-use std::io::{self, BufRead, Write};
+use std::io::{self, Read, Write};
 
 #[derive(Debug)]
 pub struct CsvRecords(Vec<CsvRecord>);
@@ -38,7 +38,7 @@ impl From<JsonRecords> for CsvRecords {
 }
 
 impl Parse<CsvRecords> for CsvRecords {
-    fn parse(reader: impl BufRead) -> Result<Self, ParseError> {
+    fn parse(reader: impl Read) -> Result<Self, ParseError> {
         Ok(csv_parser::parse(reader)?)
     }
 }

@@ -1,9 +1,9 @@
 use super::ParseError;
 use crate::{CsvRecord, CsvRecords};
 
-use std::io::BufRead;
+use std::io::Read;
 
-pub fn parse(reader: impl BufRead) -> Result<CsvRecords, ParseError> {
+pub fn parse(reader: impl Read) -> Result<CsvRecords, ParseError> {
     let mut reader = csv::Reader::from_reader(reader);
 
     let mut records: Vec<CsvRecord> = Vec::new();

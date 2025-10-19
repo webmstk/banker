@@ -7,9 +7,9 @@ pub use records::{CsvRecord, CsvRecords, JsonRecord, JsonRecords};
 use parsers::ParseError;
 use records::{Parse, Print};
 
-use std::io::{self, BufRead, Write};
+use std::io::{self, Read, Write};
 
-pub fn parse<T>(reader: impl BufRead) -> Result<T, ParseError>
+pub fn parse<T>(reader: impl Read) -> Result<T, ParseError>
 where
     T: Parse<T>,
 {
