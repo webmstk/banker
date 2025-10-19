@@ -1,19 +1,20 @@
+mod error;
 mod parsers;
 mod printers;
 mod records;
 
 pub use records::{CsvRecord, CsvRecords, JsonRecord, JsonRecords};
 
-use parsers::ParseError;
+use crate::error::BankError;
 use records::{Parse, Print};
 
-use std::io::{self, Read, Write};
+use std::io::{Read, Write};
 
-pub fn parse<T>(reader: impl Read) -> Result<T, ParseError>
+pub fn parse<T>(reader: impl Read) -> Result<T, BankError>
 where
     T: Parse<T>,
 {
-    T::parse(reader)
+    Ok(T::parse(reader)?)
 }
 
 pub fn convert_to<T1, T2>(records: T1) -> T2
@@ -23,11 +24,11 @@ where
     records.into()
 }
 
-pub fn print<T>(writer: impl Write, records: T) -> Result<(), io::Error>
+pub fn print<T>(writer: impl Write, records: T) -> Result<(), BankError>
 where
     T: Print,
 {
-    records.print(writer)
+    Ok(records.print(writer)?)
 }
 
 #[cfg(test)]
@@ -35,7 +36,7 @@ mod tests {
     use super::*;
 
     use serde_json::json;
-    use std::io::Cursor;
+    use std::io::{self, Cursor};
 
     #[test]
     fn parse_fn_successfuly_parses_valid_csv_input() {
@@ -58,7 +59,8 @@ mod tests {
 
         let err = parse::<CsvRecords>(input).err().unwrap();
 
-        let expected = "CSV deserialize error: record 1 (line: 2, byte: 18): missing field `name`";
+        let expected = "Не получилось распарсить вашу фигню: \
+                        CSV deserialize error: record 1 (line: 2, byte: 18): missing field `name`";
         assert_eq!(err.to_string(), expected);
     }
 
@@ -97,7 +99,8 @@ mod tests {
 
         let err = parse::<JsonRecords>(input).err().unwrap();
 
-        let expected = "invalid type: map, expected a sequence at line 1 column 1";
+        let expected = "Не получилось распарсить вашу фигню: \
+                        invalid type: map, expected a sequence at line 1 column 1";
         assert_eq!(err.to_string(), expected);
     }
 
@@ -223,5 +226,34 @@ mod tests {
 ]"#;
 
         assert_eq!(buffer, expected.as_bytes());
+    }
+
+    #[test]
+    fn print_fn_returns_error_if_writer_fails() {
+        struct TestWriter {}
+
+        impl Write for TestWriter {
+            fn write(&mut self, _buf: &[u8]) -> io::Result<usize> {
+                Err(io::Error::new(io::ErrorKind::PermissionDenied, "boom"))
+            }
+
+            fn flush(&mut self) -> std::io::Result<()> {
+                todo!()
+            }
+        }
+
+        let record = JsonRecord {
+            name: "Petr".into(),
+            balance: 100,
+            bank_name: None,
+        };
+
+        let records: JsonRecords = vec![record].into();
+
+        let mut buffer = TestWriter {};
+        let err = print(&mut buffer, &records).err().unwrap();
+
+        let expected = "Не получилось сохранить результат: boom";
+        assert_eq!(err.to_string(), expected);
     }
 }

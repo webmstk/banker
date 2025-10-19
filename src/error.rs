@@ -1,0 +1,35 @@
+use crate::parsers::ParseError;
+
+use std::error::Error;
+use std::fmt::Display;
+use std::io;
+
+#[derive(Debug)]
+pub enum BankError {
+    ParseError(ParseError),
+    PrintError(io::Error),
+}
+
+impl Error for BankError {}
+
+impl Display for BankError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use BankError::*;
+        match self {
+            ParseError(err) => write!(f, "Не получилось распарсить вашу фигню: {}", err),
+            PrintError(err) => write!(f, "Не получилось сохранить результат: {}", err),
+        }
+    }
+}
+
+impl From<ParseError> for BankError {
+    fn from(value: ParseError) -> Self {
+        Self::ParseError(value)
+    }
+}
+
+impl From<io::Error> for BankError {
+    fn from(value: io::Error) -> Self {
+        Self::PrintError(value)
+    }
+}
