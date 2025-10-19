@@ -1,12 +1,13 @@
 mod parsers;
+mod printers;
 mod records;
 
 pub use records::{CsvRecord, CsvRecords, JsonRecord, JsonRecords};
 
 use parsers::ParseError;
-use records::Parse;
+use records::{Parse, Print};
 
-use std::io::BufRead;
+use std::io::{self, BufRead, Write};
 
 pub fn parse<T>(reader: impl BufRead) -> Result<T, ParseError>
 where
@@ -20,6 +21,13 @@ where
     T1: Into<T2>,
 {
     records.into()
+}
+
+pub fn print<T>(writer: impl Write, records: T) -> Result<(), io::Error>
+where
+    T: Print,
+{
+    records.print(writer)
 }
 
 #[cfg(test)]
@@ -173,5 +181,47 @@ mod tests {
 
         assert_eq!(json_records.list().len(), 1);
         assert_eq!(json_records.list().first().unwrap(), &expected);
+    }
+
+    #[test]
+    fn print_fn_writes_csv_to_writer() {
+        let record = CsvRecord {
+            name: "Petr".into(),
+            balance: 100,
+        };
+
+        let records: CsvRecords = vec![record].into();
+
+        let mut buffer = Vec::new();
+        print(&mut buffer, &records).unwrap();
+
+        let expected = "name,balance\n\
+                        Petr,100\n"
+            .to_string();
+        assert_eq!(buffer, expected.into_bytes());
+    }
+
+    #[test]
+    fn print_fn_writes_json_to_writer() {
+        let record = JsonRecord {
+            name: "Petr".into(),
+            balance: 100,
+            bank_name: Some("Central Bank".into()),
+        };
+
+        let records: JsonRecords = vec![record].into();
+
+        let mut buffer = Vec::new();
+        print(&mut buffer, &records).unwrap();
+
+        let expected = r#"[
+  {
+    "name": "Petr",
+    "balance": 100,
+    "bank_name": "Central Bank"
+  }
+]"#;
+
+        assert_eq!(buffer, expected.as_bytes());
     }
 }

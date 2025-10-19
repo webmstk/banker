@@ -1,11 +1,11 @@
-use super::{JsonRecord, JsonRecords};
-use crate::Parse;
-use crate::parsers::ParseError;
-use crate::parsers::csv_parser;
+use super::{Parse, Print};
+use crate::parsers::{ParseError, csv_parser};
+use crate::printers::csv_printer;
+use crate::{JsonRecord, JsonRecords};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-use std::io::BufRead;
+use std::io::{self, BufRead, Write};
 
 #[derive(Debug)]
 pub struct CsvRecords(Vec<CsvRecord>);
@@ -43,7 +43,13 @@ impl Parse<CsvRecords> for CsvRecords {
     }
 }
 
-#[derive(Debug, Deserialize)]
+impl Print for &CsvRecords {
+    fn print(&self, writer: impl Write) -> Result<(), io::Error> {
+        csv_printer::print(writer, self)
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct CsvRecord {
     pub name: String,
