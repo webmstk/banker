@@ -3,10 +3,9 @@ mod parsers;
 mod printers;
 mod records;
 
+pub use error::BankError;
 pub use records::{CsvRecord, CsvRecords, JsonRecord, JsonRecords};
-
-use crate::error::BankError;
-use records::{Parse, Print};
+pub use records::{Parse, Print};
 
 use std::io::{Read, Write};
 
@@ -59,7 +58,7 @@ mod tests {
 
         let err = parse::<CsvRecords>(input).err().unwrap();
 
-        let expected = "Не получилось распарсить вашу фигню: \
+        let expected = "не получилось распарсить вашу фигню: \
                         CSV deserialize error: record 1 (line: 2, byte: 18): missing field `name`";
         assert_eq!(err.to_string(), expected);
     }
@@ -99,7 +98,7 @@ mod tests {
 
         let err = parse::<JsonRecords>(input).err().unwrap();
 
-        let expected = "Не получилось распарсить вашу фигню: \
+        let expected = "не получилось распарсить вашу фигню: \
                         invalid type: map, expected a sequence at line 1 column 1";
         assert_eq!(err.to_string(), expected);
     }
@@ -253,7 +252,7 @@ mod tests {
         let mut buffer = TestWriter {};
         let err = print(&mut buffer, &records).err().unwrap();
 
-        let expected = "Не получилось сохранить результат: boom";
+        let expected = "не получилось сохранить результат: boom";
         assert_eq!(err.to_string(), expected);
     }
 }

@@ -16,8 +16,8 @@ impl Display for BankError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use BankError::*;
         match self {
-            ParseError(err) => write!(f, "Не получилось распарсить вашу фигню: {}", err),
-            PrintError(err) => write!(f, "Не получилось сохранить результат: {}", err),
+            ParseError(err) => write!(f, "не получилось распарсить вашу фигню: {}", err),
+            PrintError(err) => write!(f, "не получилось сохранить результат: {}", err),
         }
     }
 }
