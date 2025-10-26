@@ -1,6 +1,5 @@
 use clap::{Parser, ValueEnum};
 
-use std::fmt::Display;
 use std::path::PathBuf;
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
@@ -9,16 +8,6 @@ pub enum Format {
     Csv,
     /// json
     Json,
-}
-
-impl Display for Format {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use Format::*;
-        match self {
-            Csv => write!(f, "csv"),
-            Json => write!(f, "json"),
-        }
-    }
 }
 
 #[derive(Parser)]
