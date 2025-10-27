@@ -1,12 +1,16 @@
+//! Модуль описывает ошибки библиотеки.
 use crate::parsers::ParseError;
 
 use std::error::Error;
 use std::fmt::Display;
 use std::io;
 
+/// Перечисление ошибок, которые могу возникнуть в программе.
 #[derive(Debug)]
 pub enum BankError {
+    /// Ошибка парсинга данных.
     ParseError(ParseError),
+    /// Ошибка записи данных.
     PrintError(io::Error),
 }
 

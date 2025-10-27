@@ -1,3 +1,5 @@
+//! Модуль для парсинга данных.
+
 pub mod csv_parser;
 pub mod json_parser;
 

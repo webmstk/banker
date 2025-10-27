@@ -1,3 +1,5 @@
+//! Модуль содержит функционал, связанный со списком операций в формате `json` [JsonRecords].
+
 use super::{Parse, Print};
 use crate::parsers::{ParseError, json_parser};
 use crate::printers::json_printer;
@@ -7,6 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use std::io::{self, Read, Write};
 
+/// Список банковских операций, представленных в формате `json`.
 #[derive(Debug)]
 pub struct JsonRecords(Vec<JsonRecord>);
 
@@ -49,6 +52,7 @@ impl Print for &JsonRecords {
     }
 }
 
+/// Банковская операция, представленная в формете `json`.
 #[derive(Debug, Deserialize, Serialize)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct JsonRecord {

@@ -1,3 +1,5 @@
+//! Модуль содержит функционал, связанный со списком операций в формате `csv` [CsvRecords].
+
 use super::{Parse, Print};
 use crate::parsers::{ParseError, csv_parser};
 use crate::printers::csv_printer;
@@ -7,6 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use std::io::{self, Read, Write};
 
+/// Список банковских операций, представленных в формате `csv`.
 #[derive(Debug)]
 pub struct CsvRecords(Vec<CsvRecord>);
 
@@ -49,6 +52,7 @@ impl Print for &CsvRecords {
     }
 }
 
+/// Банковская операция, представленная в формете `csv`.
 #[derive(Debug, Deserialize, Serialize)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct CsvRecord {
