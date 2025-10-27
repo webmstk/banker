@@ -1,6 +1,6 @@
-mod convert;
-mod parse;
-mod print;
+mod convert_tests;
+mod parse_tests;
+mod print_tests;
 
 use crate::{CsvRecord, JsonRecord};
 use std::io::Cursor;
