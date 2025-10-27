@@ -1,17 +1,14 @@
-//! Библиотка для чтения банковских операций в разных форматах.
-//! Может читать.
-//! Может конвертировать.
-//! Может писать.
-//! Поднимает настроение и тонус, делает волосы гладкими и шелковистыми!
+#![doc = include_str!("../../README.md")]
 
-mod error;
+pub mod error;
+pub mod records;
+
 mod parsers;
 mod printers;
-mod records;
 
-pub use error::BankError;
-pub use records::{CsvRecord, CsvRecords, JsonRecord, JsonRecords};
-pub use records::{Parse, Print};
+use error::BankError;
+use records::{CsvRecord, CsvRecords, JsonRecord, JsonRecords};
+use records::{Parse, Print};
 
 use std::io::{Read, Write};
 
@@ -21,7 +18,8 @@ use std::io::{Read, Write};
 /// # Пример
 ///
 /// ```
-/// use banker::{parse, CsvRecords};
+/// use banker::parse;
+/// use banker::records::CsvRecords;
 /// use std::io::Cursor;
 ///
 /// let input = Cursor::new("name,balance\nVova,100");
@@ -44,7 +42,8 @@ where
 /// # Пример
 ///
 /// ```
-/// use banker::{convert_to, CsvRecord, CsvRecords, JsonRecords};
+/// use banker::convert_to;
+/// use banker::records::{CsvRecord, CsvRecords, JsonRecords};
 ///
 /// let record = CsvRecord {
 ///     name: "Vova".into(),
@@ -65,7 +64,8 @@ where
 /// # Пример
 ///
 /// ```
-/// use banker::{print, CsvRecord, CsvRecords};
+/// use banker::print;
+/// use banker::records::{CsvRecord, CsvRecords};
 ///
 /// let record = CsvRecord {
 ///     name: "Petr".into(),
