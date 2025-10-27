@@ -56,15 +56,25 @@ impl Print for &CsvRecords {
 #[derive(Debug, Deserialize, Serialize)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct CsvRecord {
-    pub name: String,
-    pub balance: i32,
+    pub from_client: String,
+    pub from_bank: String,
+    pub to_client: String,
+    pub to_bank: String,
+    pub transaction: String,
+    pub amount: f64,
+    pub date: String,
 }
 
 impl From<JsonRecord> for CsvRecord {
-    fn from(value: JsonRecord) -> Self {
+    fn from(json_record: JsonRecord) -> Self {
         Self {
-            name: value.name,
-            balance: value.balance,
+            from_client: json_record.sender,
+            from_bank: json_record.sender_bank,
+            to_client: json_record.reciever,
+            to_bank: json_record.reciever_bank,
+            transaction: json_record.transaction_id,
+            amount: json_record.quantity,
+            date: json_record.date,
         }
     }
 }

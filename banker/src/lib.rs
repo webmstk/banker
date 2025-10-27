@@ -22,13 +22,17 @@ use std::io::{Read, Write};
 /// use banker::records::CsvRecords;
 /// use std::io::Cursor;
 ///
-/// let input = Cursor::new("name,balance\nVova,100");
+/// let input = Cursor::new(
+///     "from_client,from_bank,to_client,to_bank,transaction,amount,date\n\
+///     Alice,bank_a,Bob,bank_b,123,500.05,24-01-2025\n",
+/// );
 ///
 /// let records: CsvRecords = parse(input).unwrap();
 /// let record = records.list().first().unwrap();
 ///
-/// assert_eq!(record.name, "Vova");
-/// assert_eq!(record.balance, 100);
+/// assert_eq!(record.from_client, "Alice");
+/// assert_eq!(record.to_client, "Bob");
+/// assert_eq!(record.amount, 500.05);
 pub fn parse<T>(reader: impl Read) -> Result<T, BankError>
 where
     T: Parse<T>,
@@ -46,8 +50,13 @@ where
 /// use banker::records::{CsvRecord, CsvRecords, JsonRecords};
 ///
 /// let record = CsvRecord {
-///     name: "Vova".into(),
-///     balance: 400,
+///     from_client: "Alice".into(),
+///     from_bank: "bank_a".into(),
+///     to_client: "Bob".into(),
+///     to_bank: "bank_b".into(),
+///     transaction: "123".into(),
+///     amount: 500.05,
+///     date: "24-01-2025".into(),
 /// };
 /// let csv: CsvRecords = vec![record].into();
 ///
@@ -68,17 +77,23 @@ where
 /// use banker::records::{CsvRecord, CsvRecords};
 ///
 /// let record = CsvRecord {
-///     name: "Petr".into(),
-///     balance: 200,
+///     from_client: "Alice".into(),
+///     from_bank: "bank_a".into(),
+///     to_client: "Bob".into(),
+///     to_bank: "bank_b".into(),
+///     transaction: "123".into(),
+///     amount: 500.05,
+///     date: "24-01-2025".into(),
 /// };
 /// let records: CsvRecords = vec![record].into();
 ///
 /// let mut buffer = Vec::new();
 /// print(&mut buffer, &records).unwrap();
 ///
-/// let expected = "name,balance\n\
-///                     Petr,200\n"
+/// let expected = "from_client,from_bank,to_client,to_bank,transaction,amount,date\n\
+///     Alice,bank_a,Bob,bank_b,123,500.05,24-01-2025\n"
 ///     .to_string();
+///
 /// assert_eq!(buffer, expected.into_bytes());
 pub fn print<T>(writer: impl Write, records: T) -> Result<(), BankError>
 where

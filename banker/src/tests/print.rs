@@ -1,48 +1,42 @@
+use super::*;
 use crate::print;
-use crate::{CsvRecord, CsvRecords, JsonRecord, JsonRecords};
+use crate::{CsvRecords, JsonRecords};
 
-use std::io::{self, Write};
+use std::io::{self, Read, Write};
 
 #[test]
 fn print_fn_writes_csv_to_writer() {
-    let record = CsvRecord {
-        name: "Petr".into(),
-        balance: 100,
-    };
+    let record = sample_csv_record();
 
     let records: CsvRecords = vec![record].into();
 
     let mut buffer = Vec::new();
     print(&mut buffer, &records).unwrap();
 
-    let expected = "name,balance\n\
-                        Petr,100\n"
-        .to_string();
+    let mut expected = String::new();
+    sample_csv_data().read_to_string(&mut expected).unwrap();
+
     assert_eq!(buffer, expected.into_bytes());
 }
 
 #[test]
 fn print_fn_writes_json_to_writer() {
-    let record = JsonRecord {
-        name: "Petr".into(),
-        balance: 100,
-        bank_name: Some("Central Bank".into()),
-    };
+    use serde_json::Value as Json;
+
+    let record = sample_json_record();
 
     let records: JsonRecords = vec![record].into();
 
     let mut buffer = Vec::new();
     print(&mut buffer, &records).unwrap();
 
-    let expected = r#"[
-  {
-    "name": "Petr",
-    "balance": 100,
-    "bank_name": "Central Bank"
-  }
-]"#;
+    let mut expected = String::new();
+    sample_json_data().read_to_string(&mut expected).unwrap();
 
-    assert_eq!(buffer, expected.as_bytes());
+    let actual_json: Json = serde_json::from_slice(&buffer).unwrap();
+    let expected_json: Json = serde_json::from_str(&expected).unwrap();
+
+    assert_eq!(actual_json, expected_json);
 }
 
 #[test]
@@ -59,11 +53,7 @@ fn print_fn_returns_error_if_writer_fails() {
         }
     }
 
-    let record = JsonRecord {
-        name: "Petr".into(),
-        balance: 100,
-        bank_name: None,
-    };
+    let record = sample_json_record();
 
     let records: JsonRecords = vec![record].into();
 

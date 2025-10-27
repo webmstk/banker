@@ -15,14 +15,18 @@ use banker::{convert_to, parse, print};
 use banker::records::{CsvRecords, JsonRecords};
 use std::io::Cursor;
 
-let input = Cursor::new("name,balance\nPetr,100");
+let input = Cursor::new(
+    "from_client,from_bank,to_client,to_bank,transaction,amount,date\n\
+    Alice,bank_a,Bob,bank_b,123,500.05,24-01-2025\n",
+);
 
 // Распарсили данные в формате `csv`
 let csv_records: CsvRecords = parse(input).unwrap();
 let record = csv_records.list().first().unwrap();
 
-assert_eq!(record.name, "Petr");
-assert_eq!(record.balance, 100);
+assert_eq!(record.from_client, "Alice");
+assert_eq!(record.to_client, "Bob");
+assert_eq!(record.amount, 500.05);
 
 // Сконвертировали в формат `json`
 let json_records: JsonRecords = convert_to(csv_records);
@@ -34,9 +38,13 @@ print(&mut buffer, &json_records).unwrap();
 
 let expected = r#"[
   {
-    "name": "Petr",
-    "balance": 100,
-    "bank_name": null
+    "sender": "Alice",
+    "sender_bank": "bank_a",
+    "reciever": "Bob",
+    "reciever_bank": "bank_b",
+    "transaction_id": "123",
+    "quantity": 500.05,
+    "date": "24-01-2025"
   }
 ]"#;
 
