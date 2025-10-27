@@ -1,8 +1,9 @@
 use crate::config::Config;
 use crate::config::Format;
 use crate::error::BconvError;
-use banker::{BankError, Parse, Print};
-use banker::{CsvRecords, JsonRecords};
+use banker::error::BankError;
+use banker::records::{CsvRecords, JsonRecords};
+use banker::records::{Parse, Print};
 use std::fs::{File, OpenOptions};
 use std::io::{self, BufReader, BufWriter, Read, Write, stdin, stdout};
 

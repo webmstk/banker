@@ -1,4 +1,4 @@
-use banker::BankError;
+use banker::error::BankError;
 
 use std::error::Error;
 use std::fmt::Display;
