@@ -1,0 +1,20 @@
+[
+  {
+    "sender": "Alice",
+    "sender_bank": "bank_a",
+    "reciever": "Bob",
+    "reciever_bank": "bank_b",
+    "transaction_id": "123",
+    "quantity": 500.05,
+    "date": "24-01-2025"
+  },
+  {
+    "sender": "Bob",
+    "sender_bank": "bank_b",
+    "reciever": "Alice",
+    "reciever_bank": "bank_a",
+    "transaction_id": "124",
+    "quantity": 215.0,
+    "date": "25-01-2025"
+  }
+]
