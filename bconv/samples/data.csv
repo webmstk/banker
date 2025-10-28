@@ -1,3 +1,0 @@
-from_client,from_bank,to_client,to_bank,transaction,amount,date
-Alice,bank_a,Bob,bank_b,123,500.05,24-01-2025
-Bob,bank_b,Alice,bank_a,124,215.00,25-01-2025

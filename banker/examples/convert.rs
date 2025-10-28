@@ -5,7 +5,7 @@ use std::io::BufReader;
 use std::path::Path;
 
 fn main() {
-    let path = Path::new("samples/data.csv");
+    let path = Path::new("../samples/data.csv");
     let file = File::open(path).unwrap();
     let reader = BufReader::new(file);
 
