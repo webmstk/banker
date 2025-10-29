@@ -14,10 +14,12 @@ use std::io::{self, Read, Write};
 pub struct CsvRecords(Vec<CsvRecord>);
 
 impl CsvRecords {
+    /// Список отдельных транзакций
     pub fn list(&self) -> &Vec<CsvRecord> {
         &self.0
     }
 
+    /// Деконструирует структуру на список транзакций
     pub fn into_parts(self) -> Vec<CsvRecord> {
         self.0
     }
@@ -56,12 +58,19 @@ impl Print for &CsvRecords {
 #[derive(Debug, Deserialize, Serialize)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct CsvRecord {
+    /// Отправитель денег
     pub from_client: String,
+    /// Банк отправителя денег
     pub from_bank: String,
+    /// Получатель денег
     pub to_client: String,
+    /// Банк получателя денег
     pub to_bank: String,
+    /// Идентификатор транзакции
     pub transaction: String,
+    /// Количество денег
     pub amount: f64,
+    /// Дата транзакции
     pub date: String,
 }
 

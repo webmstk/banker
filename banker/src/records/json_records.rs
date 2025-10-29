@@ -14,10 +14,12 @@ use std::io::{self, Read, Write};
 pub struct JsonRecords(Vec<JsonRecord>);
 
 impl JsonRecords {
+    /// Список отдельных транзакций
     pub fn list(&self) -> &Vec<JsonRecord> {
         &self.0
     }
 
+    /// Деконструирует структуру на список транзакций
     pub fn into_parts(self) -> Vec<JsonRecord> {
         self.0
     }
@@ -56,12 +58,19 @@ impl Print for &JsonRecords {
 #[derive(Debug, Deserialize, Serialize)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct JsonRecord {
+    /// Отправитель денег
     pub sender: String,
+    /// Банк отправителя денег
     pub sender_bank: String,
+    /// Получатель денег
     pub reciever: String,
+    /// Банк получателя денег
     pub reciever_bank: String,
+    /// Идентификатор транзакции
     pub transaction_id: String,
+    /// Количество денег
     pub quantity: f64,
+    /// Дата транзакции
     pub date: String,
 }
 
