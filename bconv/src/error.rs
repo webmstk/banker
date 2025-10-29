@@ -1,28 +1,19 @@
 use banker::error::BankError;
 
 use std::error::Error;
-use std::fmt::Display;
 use std::io;
 
-#[derive(Debug)]
+#[derive(Debug, strum_macros::Display)]
 pub enum BconvError {
+    #[strum(to_string = "ошибка с input: {0}")]
     InputError(io::Error),
+    #[strum(to_string = "ошибка с output: {0}")]
     OutputError(io::Error),
+    #[strum(to_string = "ошибка конвертации: {0}")]
     AppError(BankError),
 }
 
 impl Error for BconvError {}
-
-impl Display for BconvError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use BconvError::*;
-        match self {
-            InputError(err) => write!(f, "ошибка с input: {err}"),
-            OutputError(err) => write!(f, "ошибка с output: {err}"),
-            AppError(err) => write!(f, "ошибка конвертации: {err}"),
-        }
-    }
-}
 
 impl From<BankError> for BconvError {
     fn from(value: BankError) -> Self {
