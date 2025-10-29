@@ -6,12 +6,13 @@ use banker::error::BankError;
 use banker::records::{CsvRecords, JsonRecords};
 use banker::records::{Parse, Print};
 
+use anyhow::Result;
 use thiserror_context::Context;
 
 use std::fs::{File, OpenOptions};
 use std::io::{self, BufReader, BufWriter, Read, Write, stdin, stdout};
 
-pub fn convert(cfg: &Config) -> Result<(), BconvError> {
+pub fn convert(cfg: &Config) -> Result<()> {
     let reader = get_reader(cfg).map_err(BconvError::InputError)?;
     let writer = get_writer(cfg).map_err(BconvError::OutputError)?;
 
