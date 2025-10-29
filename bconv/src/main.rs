@@ -12,6 +12,8 @@ fn main() {
         }
     };
 
+    init_logger(&cfg);
+
     if let Err(err) = converter::convert(cfg) {
         eprintln!("{err}");
     }
@@ -37,4 +39,10 @@ fn handle_config_errors(err: config::ConfigError) {
             );
         }
     }
+}
+
+fn init_logger(cfg: &config::Config) {
+    let mut clog = colog::default_builder();
+    clog.filter(None, cfg.log_level);
+    clog.init();
 }

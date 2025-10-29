@@ -38,6 +38,7 @@ pub fn parse<T>(reader: impl Read) -> Result<T, BankError>
 where
     T: Parse<T>,
 {
+    log::trace!("parsing from reader to `T`");
     Ok(T::parse(reader)?)
 }
 
@@ -66,6 +67,7 @@ pub fn convert_to<T1, T2>(records: T1) -> T2
 where
     T1: Into<T2>,
 {
+    log::trace!("converting `T1` into `T2`");
     records.into()
 }
 
@@ -100,6 +102,7 @@ pub fn print<T>(writer: impl Write, records: T) -> Result<(), BankError>
 where
     T: Print,
 {
+    log::trace!("writing `T` to writer");
     Ok(records.print(writer)?)
 }
 

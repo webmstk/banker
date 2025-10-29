@@ -31,6 +31,9 @@ pub struct Cli {
     /// Путь к файлу для сохранения результата
     #[arg(short, long, value_name = "FILE")]
     pub output: Option<PathBuf>,
+
+    #[arg(short, long)]
+    pub verbose: bool,
 }
 
 pub fn parse() -> Cli {

@@ -37,6 +37,7 @@ pub struct Config {
     pub output_path: Option<PathBuf>,
     pub in_format: Format,
     pub out_format: Format,
+    pub log_level: log::LevelFilter,
 }
 
 #[derive(Debug)]
@@ -78,11 +79,18 @@ impl TryFrom<Cli> for Config {
             .map(|f| f.into())
             .unwrap_or(in_format.clone());
 
+        let log_level = if cli.verbose {
+            log::LevelFilter::Trace
+        } else {
+            log::LevelFilter::Error
+        };
+
         Ok(Self {
             input_path: cli.input,
             output_path: cli.output,
             in_format,
             out_format,
+            log_level,
         })
     }
 }
