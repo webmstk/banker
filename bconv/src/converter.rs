@@ -1,21 +1,25 @@
 use crate::config::Config;
 use crate::config::Format;
 use crate::error::BconvError;
+
 use banker::error::BankError;
 use banker::records::{CsvRecords, JsonRecords};
 use banker::records::{Parse, Print};
+
+use thiserror_context::Context;
+
 use std::fs::{File, OpenOptions};
 use std::io::{self, BufReader, BufWriter, Read, Write, stdin, stdout};
 
-pub fn convert(cfg: Config) -> Result<(), BconvError> {
-    let reader = get_reader(&cfg).map_err(BconvError::InputError)?;
-    let writer = get_writer(&cfg).map_err(BconvError::OutputError)?;
+pub fn convert(cfg: &Config) -> Result<(), BconvError> {
+    let reader = get_reader(cfg).map_err(BconvError::InputError)?;
+    let writer = get_writer(cfg).map_err(BconvError::OutputError)?;
 
-    let from = cfg.in_format;
-    let to = cfg.out_format;
+    let from = &cfg.in_format;
+    let to = &cfg.out_format;
 
     println!();
-    match cfg.input_path {
+    match &cfg.input_path {
         Some(path) => println!("Читаю из '{}'", path.to_string_lossy()),
         None => println!("Читаю из stdin"),
     };
@@ -24,7 +28,7 @@ pub fn convert(cfg: Config) -> Result<(), BconvError> {
         println!("Конвертирую из '{}' в '{}'", from, to);
     };
 
-    match cfg.output_path {
+    match &cfg.output_path {
         Some(path) => println!("Пишу в '{}'", path.to_string_lossy()),
         None => {
             println!("Пишу в output");
@@ -44,12 +48,20 @@ struct Converter<R: Read, W: Write> {
 }
 
 impl<R: Read, W: Write> Converter<R, W> {
-    pub fn convert(self, from: Format, to: Format) -> Result<(), BankError> {
+    pub fn convert(self, from: &Format, to: &Format) -> Result<(), BankError> {
         match (from, to) {
-            (Format::Csv, Format::Json) => self.execute::<CsvRecords, JsonRecords>(),
-            (Format::Json, Format::Csv) => self.execute::<JsonRecords, CsvRecords>(),
-            (Format::Csv, Format::Csv) => self.execute::<CsvRecords, CsvRecords>(),
-            (Format::Json, Format::Json) => self.execute::<JsonRecords, JsonRecords>(),
+            (Format::Csv, Format::Json) => self
+                .execute::<CsvRecords, JsonRecords>()
+                .context("csv to json"),
+            (Format::Json, Format::Csv) => self
+                .execute::<JsonRecords, CsvRecords>()
+                .context("json to csv"),
+            (Format::Csv, Format::Csv) => self
+                .execute::<CsvRecords, CsvRecords>()
+                .context("csv to csv"),
+            (Format::Json, Format::Json) => self
+                .execute::<JsonRecords, JsonRecords>()
+                .context("json to json"),
         }
     }
 

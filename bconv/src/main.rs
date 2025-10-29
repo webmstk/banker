@@ -14,8 +14,11 @@ fn main() {
 
     init_logger(&cfg);
 
-    if let Err(err) = converter::convert(cfg) {
-        eprintln!("{err}");
+    if let Err(err) = converter::convert(&cfg) {
+        match cfg.log_level {
+            log::LevelFilter::Trace => eprintln!("Ошибка: {:#?}", err),
+            _ => eprintln!("Ошибка: {err}"),
+        }
     }
 }
 

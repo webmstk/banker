@@ -16,9 +16,3 @@ pub fn parse(reader: impl Read) -> Result<CsvRecords, ParseError> {
 
     Ok(records.into())
 }
-
-impl From<csv::Error> for ParseError {
-    fn from(value: csv::Error) -> Self {
-        ParseError::CsvParseError(value)
-    }
-}
