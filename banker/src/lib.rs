@@ -4,11 +4,14 @@
 pub mod error;
 pub mod records;
 
+mod formats;
+mod io;
 mod parsers;
 mod printers;
 
 use error::BankError;
-use records::{CsvRecord, CsvRecords, JsonRecord, JsonRecords};
+// use records::base_record::BaseRecord;
+use records::{CsvRecords, JsonRecord, JsonRecords};
 use records::{Parse, Print};
 
 use std::io::{Read, Write};
@@ -24,16 +27,16 @@ use std::io::{Read, Write};
 /// use std::io::Cursor;
 ///
 /// let input = Cursor::new(
-///     "from_client,from_bank,to_client,to_bank,transaction,amount,date\n\
-///     Alice,bank_a,Bob,bank_b,123,500.05,24-01-2025\n",
+///     "TX_ID,TX_TYPE,FROM_USER_ID,TO_USER_ID,AMOUNT,TIMESTAMP,STATUS,DESCRIPTION\n\
+///     1001,DEPOSIT,0,501,50000,1672531200000,SUCCESS,\"Initial \"\"account\"\" funding\"",
 /// );
 ///
 /// let records: CsvRecords = parse(input).unwrap();
 /// let record = records.list().first().unwrap();
 ///
-/// assert_eq!(record.from_client, "Alice");
-/// assert_eq!(record.to_client, "Bob");
-/// assert_eq!(record.amount, 500.05);
+/// assert_eq!(record.from_user_id, 0);
+/// assert_eq!(record.to_user_id, 501);
+/// assert_eq!(record.amount, 50000);
 pub fn parse<T>(reader: impl Read) -> Result<T, BankError>
 where
     T: Parse<T>,
@@ -49,16 +52,19 @@ where
 ///
 /// ```
 /// use banker::convert_to;
-/// use banker::records::{CsvRecord, CsvRecords, JsonRecords};
+/// use banker::records::{Transaction, CsvRecords, JsonRecords};
+/// use banker::records::base::{Status, TxType};
+/// use chrono::DateTime;
 ///
-/// let record = CsvRecord {
-///     from_client: "Alice".into(),
-///     from_bank: "bank_a".into(),
-///     to_client: "Bob".into(),
-///     to_bank: "bank_b".into(),
-///     transaction: "123".into(),
-///     amount: 500.05,
-///     date: "24-01-2025".into(),
+/// let record = Transaction {
+///     tx_id: 1001,
+///     tx_type: TxType::Deposit,
+///     from_user_id: 0,
+///     to_user_id: 0,
+///     amount: 50000,
+///     timestamp: DateTime::from_timestamp_millis(1672531200000).unwrap(),
+///     status: Status::Success,
+///     description: "Initial \"account\" funding".into(),
 /// };
 /// let csv: CsvRecords = vec![record].into();
 ///
@@ -77,27 +83,30 @@ where
 ///
 /// ```
 /// use banker::print;
-/// use banker::records::{CsvRecord, CsvRecords};
+/// use banker::records::{Transaction, CsvRecords};
+/// use banker::records::base::{Status, TxType};
+/// use chrono::DateTime;
 ///
-/// let record = CsvRecord {
-///     from_client: "Alice".into(),
-///     from_bank: "bank_a".into(),
-///     to_client: "Bob".into(),
-///     to_bank: "bank_b".into(),
-///     transaction: "123".into(),
-///     amount: 500.05,
-///     date: "24-01-2025".into(),
+/// let record = Transaction {
+///     tx_id: 1001,
+///     tx_type: TxType::Deposit,
+///     from_user_id: 0,
+///     to_user_id: 501,
+///     amount: 50000,
+///     timestamp: DateTime::from_timestamp_millis(1672531200000).unwrap(),
+///     status: Status::Success,
+///     description: "Initial \"account\" funding".into(),
 /// };
 /// let records: CsvRecords = vec![record].into();
 ///
 /// let mut buffer = Vec::new();
 /// print(&mut buffer, &records).unwrap();
 ///
-/// let expected = "from_client,from_bank,to_client,to_bank,transaction,amount,date\n\
-///     Alice,bank_a,Bob,bank_b,123,500.05,24-01-2025\n"
+/// let expected = "TX_ID,TX_TYPE,FROM_USER_ID,TO_USER_ID,AMOUNT,TIMESTAMP,STATUS,DESCRIPTION\n\
+///     1001,DEPOSIT,0,501,50000,1672531200000,SUCCESS,\"Initial \"\"account\"\" funding\""
 ///     .to_string();
 ///
-/// assert_eq!(buffer, expected.into_bytes());
+/// assert_eq!(String::from_utf8(buffer).unwrap(), expected);
 pub fn print<T>(writer: impl Write, records: T) -> Result<(), BankError>
 where
     T: Print,

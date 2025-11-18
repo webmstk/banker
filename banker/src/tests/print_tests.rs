@@ -6,12 +6,12 @@ use std::io::{self, Read, Write};
 
 #[test]
 fn print_fn_writes_csv_to_writer() {
-    let record = sample_csv_record();
+    let record = sample_base_record();
 
     let records: CsvRecords = vec![record].into();
 
     let mut buffer = Vec::new();
-    print(&mut buffer, &records).unwrap();
+    print(&mut buffer, records).unwrap();
 
     let mut expected = String::new();
     sample_csv_data().read_to_string(&mut expected).unwrap();

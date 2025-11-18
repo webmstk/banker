@@ -3,12 +3,14 @@
 pub mod csv_parser;
 pub mod json_parser;
 
+use crate::parsers::csv_parser::ParseCsvError;
+
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ParseError {
     #[error("{0}")]
-    CsvParseError(#[from] csv::Error),
+    Csv(#[from] ParseCsvError),
     #[error("{0}")]
-    JsonParseError(#[from] serde_json::Error),
+    Json(#[from] serde_json::Error),
 }

@@ -1,4 +1,5 @@
 #![allow(missing_docs)]
+// Пришлось разрешить из-за impl_context!
 
 //! Модуль описывает ошибки библиотеки.
 use crate::parsers::ParseError;

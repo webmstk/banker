@@ -3,7 +3,9 @@
 use super::{Parse, Print};
 use crate::parsers::{ParseError, json_parser};
 use crate::printers::json_printer;
-use crate::{CsvRecord, CsvRecords};
+use crate::records::base::{Status, TxType};
+use crate::records::{CsvRecords, Transaction};
+use chrono::DateTime;
 
 use serde::{Deserialize, Serialize};
 
@@ -55,35 +57,56 @@ impl Print for &JsonRecords {
 }
 
 /// Банковская операция, представленная в формете `json`.
+// Добавил отличия от [BaseRecord] - нет поля `description` и другой формат у `timestamp`.
+// Можно было бы ещё и тип отправителя/получателя поменять, но тогда пришлось бы добавлять
+// обработку ошибок конвертации, а я не хочу :(
+// ну, может быть потом
+// кода-нибудь ))
 #[derive(Debug, Deserialize, Serialize)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct JsonRecord {
-    /// Отправитель денег
-    pub sender: String,
-    /// Банк отправителя денег
-    pub sender_bank: String,
-    /// Получатель денег
-    pub reciever: String,
-    /// Банк получателя денег
-    pub reciever_bank: String,
     /// Идентификатор транзакции
-    pub transaction_id: String,
+    pub tx_id: u64,
+    /// Тип транзакции
+    pub tx_type: TxType,
+    /// Отправитель денег
+    pub from: u64,
+    /// Получатель денег
+    pub to: u64,
     /// Количество денег
-    pub quantity: f64,
-    /// Дата транзакции
-    pub date: String,
+    pub quantity: i64,
+    /// Дата транзакции в формате 13-значного unix
+    pub timestamp: i64,
+    /// Статус транзакции
+    pub status: Status,
 }
 
-impl From<CsvRecord> for JsonRecord {
-    fn from(csv_record: CsvRecord) -> Self {
+impl From<Transaction> for JsonRecord {
+    fn from(base_record: Transaction) -> Self {
         Self {
-            sender: csv_record.from_client,
-            sender_bank: csv_record.from_bank,
-            reciever: csv_record.to_client,
-            reciever_bank: csv_record.to_bank,
-            transaction_id: csv_record.transaction,
-            quantity: csv_record.amount,
-            date: csv_record.date,
+            tx_id: base_record.tx_id,
+            tx_type: base_record.tx_type,
+            from: base_record.from_user_id,
+            to: base_record.to_user_id,
+            quantity: base_record.amount,
+            timestamp: base_record.timestamp.timestamp_millis(),
+            status: base_record.status,
+        }
+    }
+}
+
+impl From<JsonRecord> for Transaction {
+    fn from(json_record: JsonRecord) -> Self {
+        Self {
+            tx_id: json_record.tx_id,
+            tx_type: json_record.tx_type,
+            from_user_id: json_record.from,
+            to_user_id: json_record.to,
+            amount: json_record.quantity,
+            // Похоже всё-таки придётся делать обработку ошибок 😅
+            timestamp: DateTime::from_timestamp_millis(json_record.timestamp).unwrap(),
+            status: json_record.status,
+            description: "".to_string(),
         }
     }
 }

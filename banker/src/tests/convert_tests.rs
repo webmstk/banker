@@ -9,7 +9,8 @@ fn convert_to_csv_fn_converts_json_to_csv() {
     let records: JsonRecords = parse(data).unwrap();
     let csv_records: CsvRecords = convert_to(records);
 
-    let expected = sample_csv_record();
+    let mut expected = sample_base_record();
+    expected.description = "".into();
 
     assert_eq!(csv_records.list().len(), 1);
     assert_eq!(csv_records.list().first().unwrap(), &expected);
@@ -22,7 +23,7 @@ fn convert_to_csv_fn_leave_csv_records_untouched() {
     let records: CsvRecords = parse(data).unwrap();
     let csv_records: CsvRecords = convert_to(records);
 
-    let expected = sample_csv_record();
+    let expected = sample_base_record();
 
     assert_eq!(csv_records.list().len(), 1);
     assert_eq!(csv_records.list().first().unwrap(), &expected);
