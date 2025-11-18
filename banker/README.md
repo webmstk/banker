@@ -13,7 +13,7 @@
 
 ```
 use banker::{convert_to, parse, print};
-use banker::records::{CsvRecords, JsonRecords};
+use banker::{csv, json};
 use std::io::Cursor;
 
 let input = Cursor::new(
@@ -22,7 +22,7 @@ let input = Cursor::new(
 );
 
 // Распарсили данные в формате `csv`
-let csv_records: CsvRecords = parse(input).unwrap();
+let csv_records: csv::Records = parse(input).unwrap();
 let record = csv_records.list().first().unwrap();
 
 assert_eq!(record.from_user_id, 0);
@@ -30,7 +30,7 @@ assert_eq!(record.to_user_id, 501);
 assert_eq!(record.amount, 50000);
 
 // Сконвертировали в формат `json`
-let json_records: JsonRecords = convert_to(csv_records);
+let json_records: json::Records = convert_to(csv_records);
 
 let mut buffer = Vec::new();
 

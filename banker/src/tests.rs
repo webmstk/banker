@@ -2,7 +2,7 @@ mod convert_tests;
 mod parse_tests;
 mod print_tests;
 
-use crate::JsonRecord;
+use crate::json::JsonRecord;
 use crate::records::base::{Status, Transaction, TxType};
 use std::io::Cursor;
 

@@ -1,10 +1,11 @@
 //! Модуль содержит функционал, связанный со списком операций в формате `json` [JsonRecords].
 
 use super::{Parse, Print};
-use crate::parsers::{ParseError, json_parser};
+use crate::csv;
+use crate::parse::ParseError;
+use crate::parsers::json_parser;
 use crate::printers::json_printer;
-use crate::records::base::{Status, TxType};
-use crate::records::{CsvRecords, Transaction};
+use crate::{Status, Transaction, TxType};
 use chrono::DateTime;
 
 use serde::{Deserialize, Serialize};
@@ -13,9 +14,9 @@ use std::io::{self, Read, Write};
 
 /// Список банковских операций, представленных в формате `json`.
 #[derive(Debug)]
-pub struct JsonRecords(Vec<JsonRecord>);
+pub struct Records(Vec<JsonRecord>);
 
-impl JsonRecords {
+impl Records {
     /// Список отдельных транзакций
     pub fn list(&self) -> &Vec<JsonRecord> {
         &self.0
@@ -27,14 +28,14 @@ impl JsonRecords {
     }
 }
 
-impl From<Vec<JsonRecord>> for JsonRecords {
+impl From<Vec<JsonRecord>> for Records {
     fn from(value: Vec<JsonRecord>) -> Self {
         Self(value)
     }
 }
 
-impl From<CsvRecords> for JsonRecords {
-    fn from(value: CsvRecords) -> Self {
+impl From<csv::Records> for Records {
+    fn from(value: csv::Records) -> Self {
         value
             .into_parts()
             .into_iter()
@@ -44,13 +45,13 @@ impl From<CsvRecords> for JsonRecords {
     }
 }
 
-impl Parse<JsonRecords> for JsonRecords {
+impl Parse<Records> for Records {
     fn parse(reader: impl Read) -> Result<Self, ParseError> {
         Ok(json_parser::parse(reader)?)
     }
 }
 
-impl Print for &JsonRecords {
+impl Print for &Records {
     fn print(&self, writer: impl Write) -> Result<(), io::Error> {
         json_printer::print(writer, self)
     }
@@ -103,7 +104,10 @@ impl From<JsonRecord> for Transaction {
             from_user_id: json_record.from,
             to_user_id: json_record.to,
             amount: json_record.quantity,
-            // Похоже всё-таки придётся делать обработку ошибок 😅
+            // Здесь `unwrap`, потому что изначально не закладывался на то, что при конвертации
+            // будут возможны ошибки. Был неправ.
+            // Переделывать на `try_from` не хочется, предположим, что раз другая запись валидна,
+            // то и здесь проблем не будет 😁.
             timestamp: DateTime::from_timestamp_millis(json_record.timestamp).unwrap(),
             status: json_record.status,
             description: "".to_string(),

@@ -1,18 +1,12 @@
 //! Модуль содержащий структуры, представляющие данные в разных форматах.
 
-// TODO: rename to base, csv, json
-
 /// Содержит внутреннюю структуру, описывающую транзакцию, которая может быть использована
 /// в совместимых с ней форматоах.
 pub mod base;
-mod csv_records;
-mod json_records;
+pub mod csv;
+pub mod json;
 
-pub use base::Transaction;
-pub use csv_records::CsvRecords;
-pub use json_records::{JsonRecord, JsonRecords};
-
-use crate::parsers::ParseError;
+use crate::parse::ParseError;
 
 use std::io::{self, Read, Write};
 

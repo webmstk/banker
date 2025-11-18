@@ -1,15 +1,16 @@
-#![allow(missing_docs)]
-// Пришлось разрешить из-за impl_context!
-
 //! Модуль описывает ошибки библиотеки.
-use crate::parsers::ParseError;
+
+// Пришлось разрешить из-за impl_context!
+#![allow(missing_docs)]
+
+pub use crate::parse::ParseError;
 
 use thiserror::Error;
 use thiserror_context::{Context, impl_context};
 
 use std::io;
 
-/// Перечисление ошибок, которые могу возникнуть в программе.
+/// Перечисление ошибок, которые могут возникнуть в программе.
 #[derive(Error, Debug)]
 pub enum BankErrorInner {
     /// Ошибка парсинга данных.

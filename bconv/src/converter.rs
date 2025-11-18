@@ -3,8 +3,8 @@ use crate::config::Format;
 use crate::error::BconvError;
 
 use banker::error::BankError;
-use banker::records::{CsvRecords, JsonRecords};
-use banker::records::{Parse, Print};
+use banker::{Parse, Print};
+use banker::{csv, json};
 
 use anyhow::Result;
 use thiserror_context::Context;
@@ -52,16 +52,16 @@ impl<R: Read, W: Write> Converter<R, W> {
     pub fn convert(self, from: &Format, to: &Format) -> Result<(), BankError> {
         match (from, to) {
             (Format::Csv, Format::Json) => self
-                .execute::<CsvRecords, JsonRecords>()
+                .execute::<csv::Records, json::Records>()
                 .context("csv to json"),
             (Format::Json, Format::Csv) => self
-                .execute::<JsonRecords, CsvRecords>()
+                .execute::<json::Records, csv::Records>()
                 .context("json to csv"),
             (Format::Csv, Format::Csv) => self
-                .execute::<CsvRecords, CsvRecords>()
+                .execute::<csv::Records, csv::Records>()
                 .context("csv to csv"),
             (Format::Json, Format::Json) => self
-                .execute::<JsonRecords, JsonRecords>()
+                .execute::<json::Records, json::Records>()
                 .context("json to json"),
         }
     }

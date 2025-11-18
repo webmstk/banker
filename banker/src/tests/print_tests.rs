@@ -1,6 +1,6 @@
 use super::*;
 use crate::print;
-use crate::{CsvRecords, JsonRecords};
+use crate::{csv, json};
 
 use std::io::{self, Read, Write};
 
@@ -8,7 +8,7 @@ use std::io::{self, Read, Write};
 fn print_fn_writes_csv_to_writer() {
     let record = sample_base_record();
 
-    let records: CsvRecords = vec![record].into();
+    let records: csv::Records = vec![record].into();
 
     let mut buffer = Vec::new();
     print(&mut buffer, records).unwrap();
@@ -25,7 +25,7 @@ fn print_fn_writes_json_to_writer() {
 
     let record = sample_json_record();
 
-    let records: JsonRecords = vec![record].into();
+    let records: json::Records = vec![record].into();
 
     let mut buffer = Vec::new();
     print(&mut buffer, &records).unwrap();
@@ -55,7 +55,7 @@ fn print_fn_returns_error_if_writer_fails() {
 
     let record = sample_json_record();
 
-    let records: JsonRecords = vec![record].into();
+    let records: json::Records = vec![record].into();
 
     let mut buffer = TestWriter {};
     let err = print(&mut buffer, &records).err().unwrap();

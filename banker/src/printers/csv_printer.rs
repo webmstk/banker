@@ -1,6 +1,6 @@
 //! Модуль предоставляет функционал для записи [CsvRecords].
 
-use crate::CsvRecords;
+use crate::csv::Records;
 use crate::formats::text::*;
 use crate::io::text::*;
 use crate::records::base::Transaction;
@@ -9,7 +9,7 @@ use chrono::prelude::{DateTime, Utc};
 use std::io::{self, Write};
 
 /// Записывает [CsvRecords] в структуру, реализующую трейт [Write].
-pub fn print(mut writer: impl Write, csv: &CsvRecords) -> io::Result<()> {
+pub fn print(mut writer: impl Write, csv: &Records) -> io::Result<()> {
     writeln!(writer, "{}", headers())?;
 
     let mut records = csv.list().iter().peekable();

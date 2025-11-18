@@ -1,3 +1,5 @@
+//! Модуль, содержащий специфику текстовых форматов - csv и txt.
+
 pub(crate) const TX_ID_HEADER: &'static str = "TX_ID";
 pub(crate) const TX_TYPE_HEADER: &'static str = "TX_TYPE";
 pub(crate) const FROM_USER_ID_HEADER: &'static str = "FROM_USER_ID";

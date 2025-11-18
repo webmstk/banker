@@ -1,6 +1,6 @@
 //! Модуль предоставляет функционал для парсинга `csv` в структуру [CsvRecords].
 
-use crate::CsvRecords;
+use crate::csv::Records;
 use crate::formats::text::*;
 use crate::io::text::{self, *};
 use crate::records::base::{Transaction, Validation};
@@ -11,14 +11,16 @@ use std::fmt::Display;
 use std::io::{BufRead, BufReader, Read};
 use std::str::FromStr;
 
+/// Ошибка, возникающая при парсинге csv-формата. Содержит в себе инфомрацию о том,
+/// на какой строке возникла проблема и с каким полем (если есть).
 #[derive(Error, Debug)]
-pub struct ParseCsvError {
+pub struct CsvError {
     line: u32,
     field: Option<&'static str>,
     kind: CsvErrorKind,
 }
 
-impl ParseCsvError {
+impl CsvError {
     fn is_eof(&self) -> bool {
         if let CsvErrorKind::InvalidFormat(text::ParseError::UnexpectedEOF) = self.kind {
             return true;
@@ -27,7 +29,7 @@ impl ParseCsvError {
     }
 }
 
-impl Display for ParseCsvError {
+impl Display for CsvError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.field {
             Some(field) => {
@@ -43,18 +45,22 @@ impl Display for ParseCsvError {
 /// Ошибки, которые могу произойти при парсинге csv.
 #[derive(Error, Debug)]
 pub enum CsvErrorKind {
+    /// Неизвестный заголовок.
     #[error("unexpected value '{0}'")]
     InvalidHeader(String),
+    /// Ошибка возникающая при парсинге
     #[error("{0}")]
-    InvalidFormat(text::ParseError),
+    InvalidFormat(#[from] text::ParseError),
+    /// Ошибка при конвертировании строки в ожидаемый формат (в число, например).
     #[error("{0}")]
     ConversionError(String),
+    /// Валидационная ошибка, например, если идентификатор транзакации оказался 0.
     #[error("{0}")]
     ValidationError(#[from] Validation),
 }
 
 /// Парсит в [CsvRecords] структуру, реализующую трейт [Read].
-pub fn parse(reader: impl Read) -> Result<CsvRecords, ParseCsvError> {
+pub fn parse(reader: impl Read) -> Result<Records, CsvError> {
     let mut reader = BufReader::new(reader);
 
     // первая строка - это заголовки
@@ -71,7 +77,7 @@ pub fn parse(reader: impl Read) -> Result<CsvRecords, ParseCsvError> {
     Ok(records.into())
 }
 
-fn read_headers(mut reader: impl BufRead) -> Result<(), ParseCsvError> {
+fn read_headers(mut reader: impl BufRead) -> Result<(), CsvError> {
     read_header(TX_ID_HEADER, &mut reader)?;
     read_header(TX_TYPE_HEADER, &mut reader)?;
     read_header(FROM_USER_ID_HEADER, &mut reader)?;
@@ -83,14 +89,14 @@ fn read_headers(mut reader: impl BufRead) -> Result<(), ParseCsvError> {
     Ok(())
 }
 
-fn read_header(field: Field, mut reader: impl BufRead) -> Result<(), ParseCsvError> {
+fn read_header(field: Field, mut reader: impl BufRead) -> Result<(), CsvError> {
     // хедеры всегда на первой строке
     let line = 1;
 
     let value: String = read_field(&mut reader, line, field)?;
 
     if value != field {
-        return Err(ParseCsvError {
+        return Err(CsvError {
             line,
             field: Some(field),
             kind: CsvErrorKind::InvalidHeader(value),
@@ -100,8 +106,8 @@ fn read_header(field: Field, mut reader: impl BufRead) -> Result<(), ParseCsvErr
     Ok(())
 }
 
-fn read_row(mut reader: impl BufRead, line: u32) -> Result<Option<Transaction>, ParseCsvError> {
-    let tx_id: Result<u64, ParseCsvError> = read_field(&mut reader, line, TX_TYPE_HEADER);
+fn read_row(mut reader: impl BufRead, line: u32) -> Result<Option<Transaction>, CsvError> {
+    let tx_id: Result<u64, CsvError> = read_field(&mut reader, line, TX_TYPE_HEADER);
     // Первое поле новой строки проверяем, не пустое ли оно. Если пустое, то это валидная
     // ситуация, когда мы дочитали файл до конца.
     let tx_id = match tx_id {
@@ -134,7 +140,7 @@ fn read_row(mut reader: impl BufRead, line: u32) -> Result<Option<Transaction>, 
             .status(status)
             .description(description)
             .try_build()
-            .map_err(|e| ParseCsvError {
+            .map_err(|e| CsvError {
                 line,
                 field: None,
                 kind: CsvErrorKind::ValidationError(e),
@@ -142,11 +148,11 @@ fn read_row(mut reader: impl BufRead, line: u32) -> Result<Option<Transaction>, 
     ))
 }
 
-fn read_field<T>(mut reader: impl BufRead, line: u32, field: Field) -> Result<T, ParseCsvError>
+fn read_field<T>(mut reader: impl BufRead, line: u32, field: Field) -> Result<T, CsvError>
 where
     T: FromStr<Err: Display>,
 {
-    read_value_until(&mut reader, b',').map_err(|e| ParseCsvError {
+    read_value_until(&mut reader, b',').map_err(|e| CsvError {
         line,
         field: Some(field),
         kind: e,
@@ -157,8 +163,8 @@ fn read_quoted_field(
     mut reader: impl BufRead,
     line: u32,
     field: Field,
-) -> Result<String, ParseCsvError> {
-    read_quoted(&mut reader).map_err(|e| ParseCsvError {
+) -> Result<String, CsvError> {
+    read_quoted(&mut reader).map_err(|e| CsvError {
         line,
         field: Some(field),
         kind: CsvErrorKind::InvalidFormat(e),

@@ -1,3 +1,6 @@
+//! Модуль содержит общую для разных форматов [Transaction], которая является
+//! внутренним для них типом. Ну и всякое около того.
+
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;

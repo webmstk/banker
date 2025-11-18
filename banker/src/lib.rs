@@ -2,17 +2,19 @@
 #![doc = include_str!("../README.md")]
 
 pub mod error;
-pub mod records;
+pub mod parse;
 
 mod formats;
 mod io;
 mod parsers;
 mod printers;
+mod records;
+
+pub use records::base::{Status, Transaction, TxType};
+pub use records::{Parse, Print};
+pub use records::{csv, json};
 
 use error::BankError;
-// use records::base_record::BaseRecord;
-use records::{CsvRecords, JsonRecord, JsonRecords};
-use records::{Parse, Print};
 
 use std::io::{Read, Write};
 
@@ -23,7 +25,7 @@ use std::io::{Read, Write};
 ///
 /// ```
 /// use banker::parse;
-/// use banker::records::CsvRecords;
+/// use banker::csv;
 /// use std::io::Cursor;
 ///
 /// let input = Cursor::new(
@@ -31,7 +33,7 @@ use std::io::{Read, Write};
 ///     1001,DEPOSIT,0,501,50000,1672531200000,SUCCESS,\"Initial \"\"account\"\" funding\"",
 /// );
 ///
-/// let records: CsvRecords = parse(input).unwrap();
+/// let records: csv::Records = parse(input).unwrap();
 /// let record = records.list().first().unwrap();
 ///
 /// assert_eq!(record.from_user_id, 0);
@@ -52,8 +54,8 @@ where
 ///
 /// ```
 /// use banker::convert_to;
-/// use banker::records::{Transaction, CsvRecords, JsonRecords};
-/// use banker::records::base::{Status, TxType};
+/// use banker::{csv, json};
+/// use banker::{Status, Transaction, TxType};
 /// use chrono::DateTime;
 ///
 /// let record = Transaction {
@@ -66,9 +68,9 @@ where
 ///     status: Status::Success,
 ///     description: "Initial \"account\" funding".into(),
 /// };
-/// let csv: CsvRecords = vec![record].into();
+/// let csv: csv::Records = vec![record].into();
 ///
-/// let json: JsonRecords = convert_to(csv);
+/// let json: json::Records = convert_to(csv);
 pub fn convert_to<T1, T2>(records: T1) -> T2
 where
     T1: Into<T2>,
@@ -83,8 +85,8 @@ where
 ///
 /// ```
 /// use banker::print;
-/// use banker::records::{Transaction, CsvRecords};
-/// use banker::records::base::{Status, TxType};
+/// use banker::csv;
+/// use banker::{Status, Transaction, TxType};
 /// use chrono::DateTime;
 ///
 /// let record = Transaction {
@@ -97,7 +99,7 @@ where
 ///     status: Status::Success,
 ///     description: "Initial \"account\" funding".into(),
 /// };
-/// let records: CsvRecords = vec![record].into();
+/// let records: csv::Records = vec![record].into();
 ///
 /// let mut buffer = Vec::new();
 /// print(&mut buffer, &records).unwrap();

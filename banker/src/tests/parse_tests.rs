@@ -1,12 +1,12 @@
 use super::*;
 use crate::parse;
-use crate::{CsvRecords, JsonRecords};
+use crate::{csv, json};
 
 #[test]
 fn parse_fn_successfuly_parses_valid_csv_input() {
     let data = sample_csv_data();
 
-    let records: CsvRecords = parse(data).unwrap();
+    let records: csv::Records = parse(data).unwrap();
 
     let expected = sample_base_record();
 
@@ -18,7 +18,7 @@ fn parse_fn_successfuly_parses_valid_csv_input() {
 fn parse_fn_fails_to_parse_invalid_csv_input() {
     let data = Cursor::new("full_name,balance\nPetr,100");
 
-    let err = parse::<CsvRecords>(data).err().unwrap();
+    let err = parse::<csv::Records>(data).err().unwrap();
 
     let expected = "не получилось распарсить вашу фигню: \
         line: 1, field TX_ID: unexpected value 'full_name'";
@@ -29,7 +29,7 @@ fn parse_fn_fails_to_parse_invalid_csv_input() {
 fn parse_fn_successfuly_parses_valid_json_input() {
     let data = sample_json_data();
 
-    let records: JsonRecords = parse(data).unwrap();
+    let records: json::Records = parse(data).unwrap();
 
     let expected = sample_json_record();
 
@@ -47,7 +47,7 @@ fn parse_fn_fails_to_parse_invalid_json_input() {
         .to_string(),
     );
 
-    let err = parse::<JsonRecords>(data).err().unwrap();
+    let err = parse::<json::Records>(data).err().unwrap();
 
     let expected = "не получилось распарсить вашу фигню: \
                         invalid type: map, expected a sequence at line 1 column 1";

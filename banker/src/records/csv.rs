@@ -1,17 +1,19 @@
 //! Модуль содержит функционал, связанный со списком операций в формате `csv` [CsvRecords].
 
 use super::{Parse, Print};
-use crate::parsers::{ParseError, csv_parser};
+use crate::Transaction;
+use crate::json;
+use crate::parse::ParseError;
+use crate::parsers::csv_parser;
 use crate::printers::csv_printer;
-use crate::records::{JsonRecords, Transaction};
 
 use std::io::{self, Read, Write};
 
 /// Список банковских операций, представленных в формате `csv`.
 #[derive(Debug)]
-pub struct CsvRecords(Vec<Transaction>);
+pub struct Records(Vec<Transaction>);
 
-impl CsvRecords {
+impl Records {
     /// Список отдельных транзакций
     pub fn list(&self) -> &Vec<Transaction> {
         &self.0
@@ -23,14 +25,14 @@ impl CsvRecords {
     }
 }
 
-impl From<Vec<Transaction>> for CsvRecords {
+impl From<Vec<Transaction>> for Records {
     fn from(value: Vec<Transaction>) -> Self {
         Self(value)
     }
 }
 
-impl From<JsonRecords> for CsvRecords {
-    fn from(value: JsonRecords) -> Self {
+impl From<json::Records> for Records {
+    fn from(value: json::Records) -> Self {
         value
             .into_parts()
             .into_iter()
@@ -40,19 +42,19 @@ impl From<JsonRecords> for CsvRecords {
     }
 }
 
-impl Parse<CsvRecords> for CsvRecords {
+impl Parse<Records> for Records {
     fn parse(reader: impl Read) -> Result<Self, ParseError> {
         Ok(csv_parser::parse(reader)?)
     }
 }
 
-impl Print for CsvRecords {
+impl Print for Records {
     fn print(&self, writer: impl Write) -> Result<(), io::Error> {
         csv_printer::print(writer, self)
     }
 }
 
-impl Print for &CsvRecords {
+impl Print for &Records {
     fn print(&self, writer: impl Write) -> Result<(), io::Error> {
         csv_printer::print(writer, self)
     }
